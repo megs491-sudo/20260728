@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>별자리 로또 챗봇</title>
+  <style>
+    :root{
+      --primary:#0066cc;
+      --primary-focus:#0071e3;
+      --canvas:#ffffff;
+      --parchment:#f5f5f7;
+      --pearl:#fafafc;
+      --ink:#1d1d1f;
+      --body:#1d1d1f;
+      --muted:#6a6a6a;
+      --divider:#e0e0e0;
+      --soft:#f7f7f7;
+      --shadow:rgba(0,0,0,.22) 3px 5px 30px 0;
+      --radius-sm:8px;
+      --radius-md:11px;
+      --radius-lg:18px;
+      --radius-pill:9999px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:"SF Pro Text",system-ui,-apple-system,sans-serif;
+      color:var(--ink);
+      background:var(--canvas);
+    }
+    .global-nav{
+      height:44px;
+      background:#000;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      font-size:12px;
+      font-weight:400;
+      letter-spacing:-.12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:17px;
+      font-weight:600;
+      letter-spacing:-.374px;
+    }
+    .brand-mark{
+      width:24px;height:24px;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:12px;
+      font-weight:700;
+    }
+    .page{
+      width:min(1280px,100%);
+      margin:0 auto;
+      padding:32px 24px 64px;
+    }
+    .hero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:24px;
+      align-items:stretch;
+      margin-bottom:24px;
+    }
+    .hero-copy,.chat-shell,.card{
+      background:var(--canvas);
+      border:1px solid var(--divider);
+      border-radius:18px;
+      box-shadow:0 2px 6px rgba(0,0,0,.04);
+    }
+    .hero-copy{
+      padding:32px;
+      background:linear-gradient(135deg, rgba(0,102,204,.08), rgba(0,102,204,0) 36%), var(--canvas);
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 12px;
+      border-radius:var(--radius-pill);
+      background:var(--soft);
+      color:var(--primary-focus);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.32px;
+      text-transform:uppercase;
+    }
+    h1{
+      margin:18px 0 12px;
+      font-family:"SF Pro Display",system-ui,-apple-system,sans-serif;
+      font-size:56px;
+      font-weight:600;
+      line-height:1.07;
+      letter-spacing:-.28px;
+      max-width:11ch;
+    }
+    .subtitle{
+      margin:0;
+      font-size:17px;
+      line-height:1.47;
+      letter-spacing:-.374px;
+      color:var(--body);
+      max-width:60ch;
+    }
+    .hero-meta{margin-top:24px; display:flex; flex-wrap:wrap; gap:10px;}
+    .pill{
+      padding:10px 16px;
+      border-radius:var(--radius-pill);
+      background:var(--pearl);
+      border:1px solid var(--divider);
+      color:var(--ink);
+      font-size:14px;
+      font-weight:400;
+    }
+    .chat-shell{
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      min-height:520px;
+      overflow:hidden;
+    }
+    .chat-head{
+      padding:20px 24px;
+      border-bottom:1px solid var(--divider);
+      background:var(--parchment);
+    }
+    .chat-head h2{
+      margin:0;
+      font-family:"SF Pro Display",system-ui,-apple-system,sans-serif;
+      font-size:21px;
+      font-weight:600;
+      line-height:1.19;
+      letter-spacing:.231px;
+    }
+    .chat-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.43;
+    }
+    .messages{
+      padding:24px;
+      display:grid;
+      gap:14px;
+      align-content:start;
+      background:var(--canvas);
+    }
+    .bubble{
+      max-width:92%;
+      padding:14px 16px;
+      border-radius:18px;
+      border:1px solid var(--divider);
+      line-height:1.5;
+      font-size:17px;
+      letter-spacing:-.374px;
+      white-space:pre-wrap;
+    }
+    .bot{justify-self:start; background:#f3f7ff; border-top-left-radius:8px;}
+    .user{justify-self:end; background:#f5f5f7; border-top-right-radius:8px;}
+    .chat-input{
+      border-top:1px solid var(--divider);
+      padding:16px;
+      background:var(--parchment);
+      display:grid;
+      gap:10px;
+    }
+    .input-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+    }
+    input{
+      width:100%;
+      border:1px solid var(--divider);
+      border-radius:var(--radius-pill);
+      background:var(--canvas);
+      color:var(--ink);
+      font:inherit;
+      font-size:17px;
+      line-height:1.47;
+      letter-spacing:-.374px;
+      padding:12px 18px;
+      outline:none;
+    }
+    input:focus{border-color:var(--primary-focus); box-shadow:0 0 0 2px rgba(0,113,227,.15);}
+    button{
+      border:none;
+      cursor:pointer;
+      font-family:inherit;
+      transition:transform 160ms ease, opacity 160ms ease, background 160ms ease;
+    }
+    button:active{transform:scale(.95)}
+    .button-primary{
+      background:var(--primary);
+      color:#fff;
+      font-size:17px;
+      font-weight:400;
+      line-height:1.47;
+      border-radius:var(--radius-pill);
+      padding:11px 22px;
+      min-width:108px;
+    }
+    .button-secondary{
+      background:var(--canvas);
+      color:var(--primary);
+      border:1px solid var(--primary);
+      font-size:17px;
+      font-weight:400;
+      line-height:1.47;
+      border-radius:var(--radius-pill);
+      padding:11px 22px;
+    }
+    .quick-grid{display:flex; flex-wrap:wrap; gap:8px;}
+    .quick{
+      padding:8px 12px;
+      border-radius:var(--radius-pill);
+      background:var(--canvas);
+      border:1px solid var(--divider);
+      color:var(--ink);
+      font-size:14px;
+      font-weight:400;
+    }
+    .section{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:24px;
+      margin-top:24px;
+    }
+    .card{
+      padding:24px;
+    }
+    .result-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .result-head h3{
+      margin:0;
+      font-family:"SF Pro Display",system-ui,-apple-system,sans-serif;
+      font-size:34px;
+      font-weight:600;
+      line-height:1.47;
+      letter-spacing:-.374px;
+    }
+    .zodiac{color:var(--primary-focus); font-size:14px; font-weight:600; line-height:1.29; letter-spacing:-.224px;}
+    .numbers{display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px; margin-top:18px;}
+    .num{
+      min-height:88px;
+      border-radius:11px;
+      background:var(--parchment);
+      border:1px solid var(--divider);
+      display:grid;
+      place-items:center;
+      font-family:"SF Pro Display",system-ui,-apple-system,sans-serif;
+      font-size:28px;
+      font-weight:600;
+      line-height:1.1;
+      letter-spacing:-.28px;
+    }
+    .bonus-box{
+      margin-top:12px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:var(--soft);
+      border:1px solid var(--divider);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      padding:4px 10px;
+      border-radius:var(--radius-pill);
+      background:var(--primary);
+      color:#fff;
+      font-size:11px;
+      font-weight:600;
+      line-height:1.18;
+    }
+    .explain{
+      margin-top:18px;
+      color:var(--body);
+      font-size:17px;
+      line-height:1.47;
+      letter-spacing:-.374px;
+      white-space:pre-wrap;
+    }
+    .history{display:grid; gap:10px; margin-top:14px;}
+    .history-item{
+      padding:14px 16px;
+      border-radius:18px;
+      background:var(--soft);
+      border:1px solid var(--divider);
+      font-size:14px;
+      line-height:1.43;
+      color:var(--ink);
+    }
+    .muted{color:var(--muted); font-size:14px; line-height:1.43;}
+    .fine{margin-top:10px; color:var(--muted); font-size:12px; line-height:1;}
+    @media (max-width:960px){
+      .hero,.section{grid-template-columns:1fr}
+      h1{font-size:40px}
+      .chat-shell{min-height:auto}
+    }
+    @media (max-width:640px){
+      .page{padding:20px 16px 56px}
+      .hero-copy,.chat-head,.messages,.chat-input,.card{padding:18px}
+      .numbers{grid-template-columns:repeat(3, minmax(0,1fr))}
+      .input-row{grid-template-columns:1fr}
+      .global-nav{padding:0 16px}
+    }
+  </style>
+</head>
+<body>
+  <header class="global-nav">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div>별자리 로또 챗봇</div>
+    </div>
+    <div class="nav-right">생년월일 입력 · 번호 추천</div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Conversational Draw</div>
+        <h1>생년월일로 별자리를 읽고 번호를 추천합니다</h1>
+        <p class="subtitle">생년월일을 입력하면 별자리를 판별하고, 그 별자리의 성향과 숫자 흐름을 바탕으로 번호 6개와 보너스 1개를 추첨해 설명해주는 챗봇입니다.</p>
+        <div class="hero-meta">
+          <span class="pill">입력 형식: YYYY-MM-DD</span>
+          <span class="pill">예: 1994-03-15</span>
+          <span class="pill">설명 포함</span>
+        </div>
+      </div>
+
+      <section class="chat-shell">
+        <div class="chat-head">
+          <h2>챗봇에게 생년월일을 알려주세요</h2>
+          <p>예시 버튼을 누르거나 직접 입력하면 바로 결과를 보여줍니다.</p>
+        </div>
+        <div class="messages" id="messages">
+          <div class="bubble bot">안녕하세요. 생년월일을 입력해 주세요.
+예: 1994-03-15</div>
+        </div>
+        <div class="chat-input">
+          <div class="quick-grid" id="quickGrid"></div>
+          <div class="input-row">
+            <input id="birthInput" placeholder="1994-03-15" inputmode="numeric" />
+            <button id="sendBtn" class="button-primary">추첨하기</button>
+          </div>
+          <div class="fine">별자리는 생년월일 기준으로 판별하며, 결과는 재미를 위한 추천입니다.</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="section">
+      <article class="card">
+        <div class="result-head">
+          <div>
+            <div class="zodiac">현재 별자리</div>
+            <h3 id="resultTitle">아직 입력 전입니다</h3>
+          </div>
+          <div class="zodiac" id="resultSub">입력하면 번호가 생성됩니다</div>
+        </div>
+
+        <div class="numbers" id="numbers"></div>
+        <div class="bonus-box">
+          <span class="badge">보너스</span>
+          <span id="bonusNumber" style="font-family:'SF Pro Display',system-ui,-apple-system,sans-serif; font-size:28px; font-weight:600; letter-spacing:-.28px;">-</span>
+        </div>
+        <div class="explain" id="explain">생년월일을 입력하면 별자리 해석과 함께 번호 추천 이유를 보여드립니다.</div>
+      </article>
+
+      <aside class="card">
+        <div class="result-head">
+          <div>
+            <div class="zodiac">최근 결과</div>
+            <h3 style="font-size:21px; line-height:1.19;">기록</h3>
+          </div>
+        </div>
+        <div class="history" id="history"></div>
+        <div class="muted" style="margin-top:12px;">최근 5개의 추천만 보여줍니다.</div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const messagesEl = document.getElementById('messages');
+    const birthInput = document.getElementById('birthInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const quickGrid = document.getElementById('quickGrid');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSub = document.getElementById('resultSub');
+    const numbersEl = document.getElementById('numbers');
+    const bonusNumberEl = document.getElementById('bonusNumber');
+    const explainEl = document.getElementById('explain');
+    const historyEl = document.getElementById('history');
+
+    let history = [];
+
+    const zodiacRanges = [
+      { name: '염소자리', start: [12, 22], end: [1, 19], trait: '책임감, 현실감각, 꾸준함' },
+      { name: '물병자리', start: [1, 20], end: [2, 18], trait: '독창성, 유연함, 실험정신' },
+      { name: '물고기자리', start: [2, 19], end: [3, 20], trait: '감수성, 직관, 흐름' },
+      { name: '양자리', start: [3, 21], end: [4, 19], trait: '에너지, 추진력, 시작' },
+      { name: '황소자리', start: [4, 20], end: [5, 20], trait: '안정감, 인내, 균형' },
+      { name: '쌍둥이자리', start: [5, 21], end: [6, 21], trait: '호기심, 속도, 소통' },
+      { name: '게자리', start: [6, 22], end: [7, 22], trait: '보호본능, 감정, 직감' },
+      { name: '사자자리', start: [7, 23], end: [8, 22], trait: '자신감, 존재감, 확장' },
+      { name: '처녀자리', start: [8, 23], end: [9, 22], trait: '정교함, 분석, 정돈' },
+      { name: '천칭자리', start: [9, 23], end: [10, 22], trait: '조화, 감각, 선택' },
+      { name: '전갈자리', start: [10, 23], end: [11, 22], trait: '집중력, 강도, 몰입' },
+      { name: '사수자리', start: [11, 23], end: [12, 21], trait: '확장, 낙관, 모험' }
+    ];
+
+    const demoBirthdays = ['1994-03-15', '2001-11-28', '1988-07-09'];
+
+    function getZodiac(month, day){
+      for(const z of zodiacRanges){
+        const [sm, sd] = z.start;
+        const [em, ed] = z.end;
+        const inRange = (month === sm && day >= sd) || (month === em && day <= ed);
+        if(inRange) return z;
+      }
+      return zodiacRanges[0];
+    }
+
+    function seedFromString(str){
+      let seed = 0;
+      for(let i = 0; i < str.length; i++) seed = (seed * 31 + str.charCodeAt(i)) >>> 0;
+      return seed || 1;
+    }
+
+    function seededRandom(seed){
+      let x = seed >>> 0;
+      return () => {
+        x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+        return (x >>> 0) / 4294967296;
+      };
+    }
+
+    function drawNumbers(seedText){
+      const random = seededRandom(seedFromString(seedText));
+      const pool = Array.from({ length: 45 }, (_, i) => i + 1);
+      for(let i = pool.length - 1; i > 0; i--){
+        const j = Math.floor(random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const picks = pool.slice(0, 7).sort((a, b) => a - b);
+      return { main: picks.slice(0, 6), bonus: picks[6] };
+    }
+
+    function formatDateText(month, day){
+      return `${String(month).padStart(2, '0')}월 ${String(day).padStart(2, '0')}일`;
+    }
+
+    function parseBirth(input){
+      const m = input.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(!m) return null;
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      const day = Number(m[3]);
+      const date = new Date(year, month - 1, day);
+      if(date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return { year, month, day };
+    }
+
+    function addMessage(text, type){
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${type}`;
+      bubble.textContent = text;
+      messagesEl.appendChild(bubble);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function renderNumbers(numbers){
+      numbersEl.innerHTML = '';
+      numbers.main.forEach((n) => {
+        const el = document.createElement('div');
+        el.className = 'num';
+        el.textContent = String(n).padStart(2, '0');
+        numbersEl.appendChild(el);
+      });
+      bonusNumberEl.textContent = String(numbers.bonus).padStart(2, '0');
+    }
+
+    function updateHistory(entry){
+      history.unshift(entry);
+      history = history.slice(0, 5);
+      historyEl.innerHTML = '';
+      history.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.textContent = `${item.zodiac.name} · ${item.dateText} · ${item.numbers.main.map((n) => String(n).padStart(2, '0')).join(', ')} + ${String(item.numbers.bonus).padStart(2, '0')}`;
+        historyEl.appendChild(div);
+      });
+    }
+
+    function explainResult(zodiac, birth, numbers){
+      return [
+        `${zodiac.name}(${birth.month}월 ${birth.day}일)는 ${zodiac.trait}의 분위기를 가진 별자리로 봤습니다.`,
+        `그래서 숫자는 ${zodiac.name}의 느낌에 맞게 안정형 숫자와 변동형 숫자를 섞어 뽑았습니다.`,
+        `본번호는 ${numbers.main.map((n) => String(n).padStart(2, '0')).join(', ')}이고, 보너스는 ${String(numbers.bonus).padStart(2, '0')}입니다.`,
+        `숫자를 고른 기준은 생년월일 문자열을 씨드로 사용해, 같은 입력에는 같은 추천이 나오도록 설계한 것입니다.`
+      ].join('\n\n');
+    }
+
+    function initQuickButtons(){
+      quickGrid.innerHTML = '';
+      demoBirthdays.forEach((d) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quick';
+        btn.textContent = d;
+        btn.addEventListener('click', () => {
+          birthInput.value = d;
+          submitBirth(d);
+        });
+        quickGrid.appendChild(btn);
+      });
+    }
+
+    function localRecommend(inputValue){
+      const parsed = parseBirth(inputValue);
+      if(!parsed){
+        return { error: '형식이 맞지 않습니다. YYYY-MM-DD 형식으로 입력해 주세요.' };
+      }
+
+      const zodiac = getZodiac(parsed.month, parsed.day);
+      const seedText = `${inputValue.trim()} ${zodiac.name}`;
+      const numbers = drawNumbers(seedText);
+      const dateText = `${parsed.year}-${String(parsed.month).padStart(2, '0')}-${String(parsed.day).padStart(2, '0')}`;
+
+      return {
+        birthDate: dateText,
+        zodiac,
+        numbers,
+        explanation: explainResult(zodiac, parsed, numbers),
+      };
+    }
+
+    async function submitBirth(inputValue){
+      const parsed = parseBirth(inputValue);
+      if(!parsed){
+        addMessage('형식이 맞지 않습니다. YYYY-MM-DD 형식으로 입력해 주세요.', 'bot');
+        return;
+      }
+
+      addMessage('추천을 계산하고 있어요. 잠시만 기다려 주세요.', 'bot');
+
+      const result = localRecommend(inputValue);
+      if(result.error){
+        addMessage(result.error, 'bot');
+        return;
+      }
+
+      addMessage(`입력하신 생년월일 ${result.birthDate}은 ${result.zodiac.name}입니다.`, 'bot');
+      addMessage(`${result.zodiac.name}의 성향인 ${result.zodiac.trait}을 기준으로 번호를 뽑아볼게요.`, 'bot');
+      addMessage(`추천 번호: ${result.numbers.main.map((n) => String(n).padStart(2, '0')).join(', ')} + 보너스 ${String(result.numbers.bonus).padStart(2, '0')}`, 'bot');
+
+      resultTitle.textContent = result.zodiac.name;
+      resultSub.textContent = `${formatDateText(parsed.month, parsed.day)} · ${result.zodiac.trait}`;
+      renderNumbers(result.numbers);
+      explainEl.textContent = result.explanation;
+      updateHistory({
+        zodiac: result.zodiac,
+        dateText: `${result.birthDate} · ${result.zodiac.name}`,
+        numbers: result.numbers
+      });
+    }
+
+    sendBtn.addEventListener('click', () => {
+      addMessage(birthInput.value || '입력 없음', 'user');
+      submitBirth(birthInput.value);
+    });
+
+    birthInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        addMessage(birthInput.value || '입력 없음', 'user');
+        submitBirth(birthInput.value);
+      }
+    });
+
+    initQuickButtons();
+    renderNumbers({ main: [], bonus: '-' });
+  </script>
+</body>
+</html>
