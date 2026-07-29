@@ -616,12 +616,24 @@
     }
 
     sendBtn.addEventListener('click', () => {
+      if (typeof gtag === 'function') {
+        gtag('event', 'draw_click', {
+          event_category: 'engagement',
+          event_label: 'birthdate_draw_button'
+        });
+      }
       addMessage(birthInput.value || '입력 없음', 'user');
       submitBirth(birthInput.value);
     });
 
     birthInput.addEventListener('keydown', (e) => {
       if(e.key === 'Enter'){
+        if (typeof gtag === 'function') {
+          gtag('event', 'draw_click', {
+            event_category: 'engagement',
+            event_label: 'birthdate_draw_enter'
+          });
+        }
         addMessage(birthInput.value || '입력 없음', 'user');
         submitBirth(birthInput.value);
       }
