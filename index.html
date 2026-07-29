@@ -550,6 +550,30 @@
       };
     }
 
+    async function saveDraw(result){
+      try{
+        const response = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            birthDate: result.birthDate,
+            zodiacName: result.zodiac.name,
+            zodiacTrait: result.zodiac.trait,
+            numbers: result.numbers,
+            explanation: result.explanation
+          })
+        });
+
+        if(!response.ok){
+          throw new Error('저장 실패');
+        }
+
+        return true;
+      }catch{
+        return false;
+      }
+    }
+
     async function submitBirth(inputValue){
       const parsed = parseBirth(inputValue);
       if(!parsed){
@@ -578,6 +602,9 @@
         dateText: `${result.birthDate} · ${result.zodiac.name}`,
         numbers: result.numbers
       });
+
+      const saved = await saveDraw(result);
+      addMessage(saved ? '추천 결과를 DB에 저장했어요.' : '추천 결과 저장은 건너뛰었어요. Vercel에서 /api/save와 Supabase 설정을 확인해 주세요.', 'bot');
     }
 
     sendBtn.addEventListener('click', () => {
