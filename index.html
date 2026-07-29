@@ -451,36 +451,7 @@
               <h3 style="font-size:21px; line-height:1.19;">Soul 2.0</h3>
             </div>
           </div>
-          <div class="character-preview">
-            <div class="muted" style="margin:0;">캐릭터 프리뷰</div>
-            <svg viewBox="0 0 360 260" aria-label="캐릭터 프리뷰">
-              <rect width="360" height="260" fill="url(#bgPreview)"/>
-              <defs>
-                <linearGradient id="bgPreview" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0%" stop-color="#f5dbe7"/>
-                  <stop offset="100%" stop-color="#d8b7e9"/>
-                </linearGradient>
-              </defs>
-              <ellipse cx="180" cy="138" rx="98" ry="112" fill="#f9f0bc"/>
-              <ellipse cx="132" cy="106" rx="16" ry="24" fill="#4a2f1f"/>
-              <ellipse cx="228" cy="106" rx="16" ry="24" fill="#4a2f1f"/>
-              <path d="M103 98 C120 72, 150 70, 158 82" stroke="#4a2f1f" stroke-width="10" stroke-linecap="round" fill="none"/>
-              <path d="M242 82 C250 70, 281 74, 256 98" stroke="#4a2f1f" stroke-width="10" stroke-linecap="round" fill="none"/>
-              <circle cx="132" cy="126" r="21" fill="#111"/>
-              <circle cx="228" cy="126" r="21" fill="#111"/>
-              <circle cx="126" cy="120" r="5" fill="#fff"/>
-              <circle cx="222" cy="120" r="5" fill="#fff"/>
-              <path d="M122 126 Q132 138 142 126" stroke="#111" stroke-width="5" fill="none" stroke-linecap="round"/>
-              <path d="M218 126 Q228 138 238 126" stroke="#111" stroke-width="5" fill="none" stroke-linecap="round"/>
-              <path d="M136 92 L162 82" stroke="#4a2f1f" stroke-width="9" stroke-linecap="round"/>
-              <path d="M224 82 L250 92" stroke="#4a2f1f" stroke-width="9" stroke-linecap="round"/>
-              <ellipse cx="180" cy="158" rx="38" ry="26" fill="#f8f0c7"/>
-              <path d="M146 174 C160 164, 200 164, 214 174" stroke="#2f160e" stroke-width="7" fill="none" stroke-linecap="round"/>
-              <path d="M132 191 C146 210, 214 210, 228 191" fill="#5a311e"/>
-              <path d="M160 203 Q180 220 200 203" stroke="#2c140c" stroke-width="7" fill="none" stroke-linecap="round"/>
-            </svg>
-            <div class="muted" style="margin:0;">번호 추첨 시 이 캐릭터 느낌을 바탕으로 이미지를 생성합니다.</div>
-          </div>
+          <div class="character-preview" id="characterPreview" style="display:none;"></div>
           <div class="image-wrap" id="imageWrap">
             <div class="image-placeholder" id="imagePlaceholder">번호를 추첨하면 여기에서 이미지를 생성합니다.</div>
           </div>
@@ -530,7 +501,7 @@
     const hfApiSecretEl = document.getElementById('hfApiSecret');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
-    const characterPreview = document.querySelector('.character-preview');
+    const characterPreview = document.getElementById('characterPreview');
     const imageStatus = document.getElementById('imageStatus');
 
     let history = [];
@@ -651,6 +622,8 @@
       imageStatus.textContent = text;
       if (characterPreview) {
         characterPreview.dataset.state = 'loading';
+        characterPreview.style.display = 'none';
+        characterPreview.innerHTML = '';
       }
     }
 
@@ -663,6 +636,7 @@
       imageStatus.textContent = '이미지 생성 완료';
       if (characterPreview) {
         characterPreview.dataset.state = 'ready';
+        characterPreview.style.display = 'block';
         characterPreview.innerHTML = '';
 
         const title = document.createElement('div');
@@ -895,6 +869,10 @@
 
     initQuickButtons();
     renderNumbers({ main: [], bonus: '-' });
+    if (characterPreview) {
+      characterPreview.style.display = 'none';
+      characterPreview.innerHTML = '';
+    }
   </script>
 </body>
 </html>
