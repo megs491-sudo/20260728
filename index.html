@@ -668,7 +668,7 @@
         const title = document.createElement('div');
         title.className = 'muted';
         title.style.margin = '0';
-        title.textContent = '생성된 캐릭터';
+        title.textContent = '상단 캐릭터 이미지';
         characterPreview.appendChild(title);
 
         const previewImg = document.createElement('img');
@@ -679,7 +679,7 @@
         const caption = document.createElement('div');
         caption.className = 'muted';
         caption.style.margin = '0';
-        caption.textContent = '생년월일 추첨 결과에 맞춰 생성된 이미지입니다.';
+        caption.textContent = '생년월일, 별자리 운세, 로또 번호에 맞춰 생성된 이미지입니다.';
         characterPreview.appendChild(caption);
       }
     }
@@ -724,7 +724,7 @@
       }
 
       const prompt = [
-        'Create a cute character portrait matching this reference style:',
+        'Create a cute character portrait that closely matches the exact reference style:',
         'round bald head, pale yellow skin tone, brown side hair blocks, thick brown eyebrows, sparkling black eyes with star-like highlights, small nose, dark brown mustache and mouth, soft pink textured background.',
         `Zodiac: ${result.zodiac.name}. Traits: ${result.zodiac.trait}.`,
         `Lottery numbers: ${result.numbers.main.join(', ')} plus bonus ${result.numbers.bonus}.`,
@@ -850,6 +850,7 @@
       }
 
       addMessage(`입력하신 생년월일 ${result.birthDate}은 ${result.zodiac.name}입니다.`, 'bot');
+      addMessage(`별자리 운세: ${result.zodiac.trait}`, 'bot');
       addMessage(`${result.zodiac.name}의 성향인 ${result.zodiac.trait}을 기준으로 번호를 뽑아볼게요.`, 'bot');
       addMessage(`추천 번호: ${result.numbers.main.map((n) => String(n).padStart(2, '0')).join(', ')} + 보너스 ${String(result.numbers.bonus).padStart(2, '0')}`, 'bot');
 
