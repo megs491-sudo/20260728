@@ -464,7 +464,7 @@
       </div>
       <div class="api-grid">
       </div>
-      <div class="muted">Higgsfield MCP URL은 `https://mcp.higgsfield.ai`로 고정해서 사용합니다. API 키는 필요하지 않습니다.</div>
+      <div class="muted">이미지는 Vercel 서버리스가 Higgsfield API 키를 사용해 생성합니다. 키는 브라우저에 저장하지 않습니다.</div>
     </section>
   </main>
 
@@ -642,8 +642,6 @@
     }
 
     async function generateImage(result){
-      const endpoint = 'https://mcp.higgsfield.ai';
-
       const prompt = [
         'A dreamy, cute portrait inspired by lottery numbers.',
         `Zodiac: ${result.zodiac.name}. Traits: ${result.zodiac.trait}.`,
@@ -655,7 +653,7 @@
       setImageLoading('이미지를 생성 중입니다...');
 
       try{
-        const response = await fetch(endpoint, {
+        const response = await fetch('/api/generate-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -689,7 +687,7 @@
         throw new Error('이미지 URL을 응답에서 찾지 못했습니다.');
       }catch(error){
         renderGeneratedImage(createFallbackImage(result));
-        imageStatus.textContent = `실제 Higgsfield 연결은 실패했지만, 로컬 대체 이미지를 보여줍니다. (${error.message})`;
+        imageStatus.textContent = `Higgsfield 연결은 실패했지만, 로컬 대체 이미지를 보여줍니다. (${error.message})`;
       }
     }
 
