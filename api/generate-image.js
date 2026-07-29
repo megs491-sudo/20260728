@@ -30,31 +30,45 @@ export default async function handler(req, res) {
   }
 
   const endpoint = process.env.HIGGSFIELD_API_URL;
-  const apiKey = process.env.HIGGSFIELD_API_KEY;
   const apiSecret = process.env.HIGGSFIELD_API_SECRET;
 
-  if (!endpoint || !apiKey) {
+  if (!endpoint) {
     json(res, 500, {
-      error: 'Higgsfield env vars are missing.',
-      detail: 'Set HIGGSFIELD_API_URL and HIGGSFIELD_API_KEY in Vercel.'
+      error: 'Higgsfield endpoint is missing.',
+      detail: 'Set HIGGSFIELD_API_URL in Vercel.'
     });
     return;
   }
 
   try {
     const payload = await readBody(req);
-    const { prompt, aspect_ratio = '1:1', quality = '2k', model = 'soul2' } = payload || {};
+    const {
+      prompt,
+      apiKey: bodyApiKey,
+      aspect_ratio = '1:1',
+      quality = '2k',
+      model = 'soul2'
+    } = payload || {};
 
     if (!prompt) {
       json(res, 400, { error: 'Prompt is required.' });
       return;
     }
 
+    const effectiveApiKey = bodyApiKey || process.env.HIGGSFIELD_API_KEY;
+    if (!effectiveApiKey) {
+      json(res, 500, {
+        error: 'Higgsfield API key is missing.',
+        detail: 'Provide apiKey in the request body or set HIGGSFIELD_API_KEY in Vercel.'
+      });
+      return;
+    }
+
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      apikey: apiKey,
-      'x-api-key': apiKey,
+      Authorization: `Bearer ${effectiveApiKey}`,
+      apikey: effectiveApiKey,
+      'x-api-key': effectiveApiKey,
       'x-api-secret': apiSecret || ''
     };
 

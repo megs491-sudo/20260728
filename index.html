@@ -463,8 +463,9 @@
         </div>
       </div>
       <div class="api-grid">
+        <input id="hfApiKey" type="password" placeholder="Higgsfield API Key" />
       </div>
-      <div class="muted">이미지는 Vercel 서버리스가 Higgsfield API 키를 사용해 생성합니다. 키는 브라우저에 저장하지 않습니다.</div>
+      <div class="muted">API 키는 저장하지 않고, 추첨할 때만 서버리스로 전달합니다.</div>
     </section>
   </main>
 
@@ -479,6 +480,7 @@
     const bonusNumberEl = document.getElementById('bonusNumber');
     const explainEl = document.getElementById('explain');
     const historyEl = document.getElementById('history');
+    const hfApiKeyEl = document.getElementById('hfApiKey');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
     const imageStatus = document.getElementById('imageStatus');
@@ -642,6 +644,12 @@
     }
 
     async function generateImage(result){
+      const apiKey = hfApiKeyEl.value.trim();
+      if (!apiKey) {
+        setImageLoading('Higgsfield API Key를 입력하면 이미지를 생성할 수 있어요.');
+        return;
+      }
+
       const prompt = [
         'A dreamy, cute portrait inspired by lottery numbers.',
         `Zodiac: ${result.zodiac.name}. Traits: ${result.zodiac.trait}.`,
@@ -660,6 +668,7 @@
           },
           body: JSON.stringify({
             model: 'soul2',
+            apiKey,
             prompt,
             aspect_ratio: '1:1',
             quality: '2k'
