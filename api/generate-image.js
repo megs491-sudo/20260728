@@ -30,7 +30,6 @@ export default async function handler(req, res) {
   }
 
   const endpoint = process.env.HIGGSFIELD_API_URL;
-  const apiSecret = process.env.HIGGSFIELD_API_SECRET;
 
   if (!endpoint) {
     json(res, 500, {
@@ -45,6 +44,7 @@ export default async function handler(req, res) {
     const {
       prompt,
       apiKey: bodyApiKey,
+      apiSecret: bodyApiSecret,
       aspect_ratio = '1:1',
       quality = '2k',
       model = 'soul2'
@@ -56,6 +56,7 @@ export default async function handler(req, res) {
     }
 
     const effectiveApiKey = bodyApiKey || process.env.HIGGSFIELD_API_KEY;
+    const effectiveApiSecret = bodyApiSecret || process.env.HIGGSFIELD_API_SECRET;
     if (!effectiveApiKey) {
       json(res, 500, {
         error: 'Higgsfield API key is missing.',
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
       Authorization: `Bearer ${effectiveApiKey}`,
       apikey: effectiveApiKey,
       'x-api-key': effectiveApiKey,
-      'x-api-secret': apiSecret || ''
+      'x-api-secret': effectiveApiSecret || ''
     };
 
     const response = await fetch(endpoint, {

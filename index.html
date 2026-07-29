@@ -464,8 +464,9 @@
       </div>
       <div class="api-grid">
         <input id="hfApiKey" type="password" placeholder="Higgsfield API Key" />
+        <input id="hfApiSecret" type="password" placeholder="Higgsfield Secret Key" />
       </div>
-      <div class="muted">API 키는 저장하지 않고, 추첨할 때만 서버리스로 전달합니다.</div>
+      <div class="muted">두 키는 저장하지 않고, 추첨할 때만 서버리스로 전달합니다.</div>
     </section>
   </main>
 
@@ -481,6 +482,7 @@
     const explainEl = document.getElementById('explain');
     const historyEl = document.getElementById('history');
     const hfApiKeyEl = document.getElementById('hfApiKey');
+    const hfApiSecretEl = document.getElementById('hfApiSecret');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
     const imageStatus = document.getElementById('imageStatus');
@@ -645,8 +647,9 @@
 
     async function generateImage(result){
       const apiKey = hfApiKeyEl.value.trim();
-      if (!apiKey) {
-        setImageLoading('Higgsfield API Key를 입력하면 이미지를 생성할 수 있어요.');
+      const apiSecret = hfApiSecretEl.value.trim();
+      if (!apiKey || !apiSecret) {
+        setImageLoading('Higgsfield API Key와 Secret Key를 입력하면 이미지를 생성할 수 있어요.');
         return;
       }
 
@@ -669,6 +672,7 @@
           body: JSON.stringify({
             model: 'soul2',
             apiKey,
+            apiSecret,
             prompt,
             aspect_ratio: '1:1',
             quality: '2k'
