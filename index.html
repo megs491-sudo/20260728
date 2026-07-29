@@ -474,15 +474,11 @@
     <section class="api-card">
       <div class="result-head">
         <div>
-          <div class="zodiac">이미지 생성 설정</div>
-          <h3 style="font-size:21px; line-height:1.19;">Higgsfield Soul 2.0 연결</h3>
+          <div class="zodiac">이미지 안내</div>
+          <h3 style="font-size:21px; line-height:1.19;">추첨하면 강아지 사진이 나타납니다</h3>
         </div>
       </div>
-      <div class="api-grid">
-        <input id="hfApiKey" type="password" placeholder="Higgsfield API Key" />
-        <input id="hfApiSecret" type="password" placeholder="Higgsfield Secret Key" />
-      </div>
-      <div class="muted">두 키는 저장하지 않고, 추첨할 때만 서버리스로 전달합니다.</div>
+      <div class="muted">API 키 입력 없이, 버튼을 누르면 바로 로컬 이미지가 생성됩니다.</div>
     </section>
   </main>
 
@@ -497,8 +493,6 @@
     const bonusNumberEl = document.getElementById('bonusNumber');
     const explainEl = document.getElementById('explain');
     const historyEl = document.getElementById('history');
-    const hfApiKeyEl = document.getElementById('hfApiKey');
-    const hfApiSecretEl = document.getElementById('hfApiSecret');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
     const characterPreview = document.getElementById('characterPreview');
@@ -613,27 +607,13 @@
       ].join('\n\n');
     }
 
-    function setImageLoading(text){
-      imageWrap.innerHTML = '';
-      const p = document.createElement('div');
-      p.className = 'image-placeholder';
-      p.textContent = text;
-      imageWrap.appendChild(p);
-      imageStatus.textContent = text;
-      if (characterPreview) {
-        characterPreview.dataset.state = 'loading';
-        characterPreview.style.display = 'none';
-        characterPreview.innerHTML = '';
-      }
-    }
-
     function renderGeneratedImage(src){
       imageWrap.innerHTML = '';
       const img = document.createElement('img');
-      img.alt = '추첨 결과 이미지';
+      img.alt = '강아지 이미지';
       img.src = src;
       imageWrap.appendChild(img);
-      imageStatus.textContent = '이미지 생성 완료';
+      imageStatus.textContent = '강아지 이미지 생성 완료';
       if (characterPreview) {
         characterPreview.dataset.state = 'ready';
         characterPreview.style.display = 'block';
@@ -642,111 +622,58 @@
         const title = document.createElement('div');
         title.className = 'muted';
         title.style.margin = '0';
-        title.textContent = '상단 캐릭터 이미지';
+        title.textContent = '상단 강아지 이미지';
         characterPreview.appendChild(title);
 
         const previewImg = document.createElement('img');
-        previewImg.alt = '생성된 캐릭터 미리보기';
+        previewImg.alt = '생성된 강아지 미리보기';
         previewImg.src = src;
         characterPreview.appendChild(previewImg);
 
         const caption = document.createElement('div');
         caption.className = 'muted';
         caption.style.margin = '0';
-        caption.textContent = '생년월일, 별자리 운세, 로또 번호에 맞춰 생성된 이미지입니다.';
+        caption.textContent = '추첨할 때 생성된 못생긴 강아지 사진입니다.';
         characterPreview.appendChild(caption);
       }
     }
 
     function createFallbackImage(result){
-      const nums = [...result.numbers.main, result.numbers.bonus].map((n) => String(n).padStart(2, '0'));
-      const colors = ['#fce7f3', '#dbeafe', '#dcfce7', '#fde68a', '#e9d5ff'];
-      const svgs = nums.map((n, i) => {
-        const cx = 96 + (i % 3) * 124;
-        const cy = 120 + Math.floor(i / 3) * 140;
-        return `
-          <circle cx="${cx}" cy="${cy}" r="42" fill="${colors[i % colors.length]}" stroke="#1d1d1f" stroke-opacity="0.08" />
-          <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="26" font-family="SF Pro Display, Arial, sans-serif" font-weight="700" fill="#1d1d1f">${n}</text>
-        `;
-      }).join('');
-
       const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 360" role="img" aria-label="추첨 결과 이미지">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 360" role="img" aria-label="못생긴 강아지 이미지">
           <defs>
             <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stop-color="#fff1f2"/>
-              <stop offset="100%" stop-color="#eef2ff"/>
+              <stop offset="0%" stop-color="#f2e4d3"/>
+              <stop offset="100%" stop-color="#d9c2ad"/>
             </linearGradient>
           </defs>
           <rect width="420" height="360" rx="24" fill="url(#bg)" />
-          <text x="28" y="42" font-size="18" font-family="SF Pro Display, Arial, sans-serif" font-weight="600" fill="#1d1d1f">${result.zodiac.name}</text>
-          <text x="28" y="66" font-size="12" font-family="SF Pro Text, Arial, sans-serif" fill="#6a6a6a">${result.zodiac.trait}</text>
-          <rect x="30" y="86" width="360" height="220" rx="22" fill="#ffffff" fill-opacity="0.7" stroke="#e0e0e0"/>
-          ${svgs}
-          <text x="210" y="330" text-anchor="middle" font-size="14" font-family="SF Pro Text, Arial, sans-serif" fill="#6a6a6a">Local fallback image</text>
+          <ellipse cx="210" cy="196" rx="130" ry="86" fill="#8b5e3c"/>
+          <ellipse cx="210" cy="150" rx="102" ry="92" fill="#c59b73"/>
+          <ellipse cx="148" cy="118" rx="34" ry="52" fill="#6b4028"/>
+          <ellipse cx="272" cy="118" rx="34" ry="52" fill="#6b4028"/>
+          <circle cx="176" cy="146" r="18" fill="#111"/>
+          <circle cx="244" cy="146" r="18" fill="#111"/>
+          <circle cx="170" cy="140" r="5" fill="#fff"/>
+          <circle cx="238" cy="140" r="5" fill="#fff"/>
+          <path d="M156 106 C180 92, 200 92, 214 100" stroke="#4b2f1d" stroke-width="10" stroke-linecap="round" fill="none"/>
+          <path d="M206 100 C224 92, 246 92, 262 108" stroke="#4b2f1d" stroke-width="10" stroke-linecap="round" fill="none"/>
+          <ellipse cx="210" cy="184" rx="28" ry="20" fill="#dfc0a5"/>
+          <path d="M186 200 C198 188, 222 188, 234 200" stroke="#3d2517" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <path d="M170 224 C186 238, 234 238, 250 224" fill="#6e4a31"/>
+          <path d="M182 228 Q210 250 238 228" stroke="#2a160d" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <circle cx="154" cy="162" r="8" fill="#fff" fill-opacity="0.35"/>
+          <circle cx="266" cy="162" r="8" fill="#fff" fill-opacity="0.35"/>
+          <text x="210" y="332" text-anchor="middle" font-size="18" font-family="Arial, sans-serif" fill="#5c4638">ugly dog mode</text>
         </svg>
       `;
       return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
     }
 
     async function generateImage(result){
-      const apiKey = hfApiKeyEl.value.trim();
-      const apiSecret = hfApiSecretEl.value.trim();
-      if (!apiKey || !apiSecret) {
-        setImageLoading('Higgsfield API Key와 Secret Key를 입력하면 이미지를 생성할 수 있어요.');
-        return;
-      }
-
-      const prompt = [
-        'Create a cute character portrait that closely matches the exact reference style:',
-        'round bald head, pale yellow skin tone, brown side hair blocks, thick brown eyebrows, sparkling black eyes with star-like highlights, small nose, dark brown mustache and mouth, soft pink textured background.',
-        `Zodiac: ${result.zodiac.name}. Traits: ${result.zodiac.trait}.`,
-        `Lottery numbers: ${result.numbers.main.join(', ')} plus bonus ${result.numbers.bonus}.`,
-        'Keep the face centered, slightly quirky, toy-like, glossy, and premium.',
-        'Make the character look like a friendly mascot for lottery numbers.'
-      ].join(' ');
-
-      setImageLoading('이미지를 생성 중입니다...');
-
-      try{
-        const response = await fetch('/api/generate-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'soul2',
-            apiKey,
-            apiSecret,
-            prompt,
-            aspect_ratio: '1:1',
-            quality: '2k'
-          })
-        });
-
-        const data = await response.json().catch(() => ({}));
-        if(!response.ok){
-          throw new Error(data.error || data.message || `HTTP ${response.status}`);
-        }
-
-        const imageUrl = data.url || data.image_url || data.output_url || data.result?.url || data.data?.[0]?.url;
-        const imageBase64 = data.base64 || data.image_base64 || data.data?.[0]?.b64_json;
-
-        if (imageUrl) {
-          renderGeneratedImage(imageUrl);
-          return;
-        }
-
-        if (imageBase64) {
-          renderGeneratedImage(`data:image/png;base64,${imageBase64}`);
-          return;
-        }
-
-        throw new Error('이미지 URL을 응답에서 찾지 못했습니다.');
-      }catch(error){
-        renderGeneratedImage(createFallbackImage(result));
-        imageStatus.textContent = `Higgsfield 연결은 실패했지만, 로컬 대체 이미지를 보여줍니다. (${error.message})`;
-      }
+      imageStatus.textContent = '강아지 이미지를 생성 중입니다...';
+      const image = createFallbackImage(result);
+      renderGeneratedImage(image);
     }
 
     function initQuickButtons(){
