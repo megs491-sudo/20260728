@@ -255,15 +255,6 @@
       display:grid;
       gap:12px;
     }
-    .api-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-    .api-grid input{
-      font-size:14px;
-      padding:10px 14px;
-    }
     .image-panel{
       margin-top:18px;
       padding:18px;
@@ -472,14 +463,8 @@
         </div>
       </div>
       <div class="api-grid">
-        <input id="hfApiKey" type="password" placeholder="Higgsfield API Key" />
-        <input id="hfEndpoint" type="text" placeholder="API Endpoint URL" />
       </div>
-      <div class="quick-grid">
-        <button id="saveApiBtn" class="button-secondary" type="button">설정 저장</button>
-        <button id="clearApiBtn" class="button-secondary" type="button">설정 삭제</button>
-      </div>
-      <div class="muted">API 키는 브라우저 localStorage에만 저장됩니다. 서버에는 올리지 않습니다.</div>
+      <div class="muted">Higgsfield MCP URL은 `https://mcp.higgsfield.ai`로 고정해서 사용합니다. API 키는 필요하지 않습니다.</div>
     </section>
   </main>
 
@@ -494,10 +479,6 @@
     const bonusNumberEl = document.getElementById('bonusNumber');
     const explainEl = document.getElementById('explain');
     const historyEl = document.getElementById('history');
-    const hfApiKeyEl = document.getElementById('hfApiKey');
-    const hfEndpointEl = document.getElementById('hfEndpoint');
-    const saveApiBtn = document.getElementById('saveApiBtn');
-    const clearApiBtn = document.getElementById('clearApiBtn');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
     const imageStatus = document.getElementById('imageStatus');
@@ -611,25 +592,6 @@
       ].join('\n\n');
     }
 
-    function loadImageSettings(){
-      hfApiKeyEl.value = localStorage.getItem('hf_api_key') || '';
-      hfEndpointEl.value = localStorage.getItem('hf_endpoint') || '';
-    }
-
-    function saveImageSettings(){
-      localStorage.setItem('hf_api_key', hfApiKeyEl.value.trim());
-      localStorage.setItem('hf_endpoint', hfEndpointEl.value.trim());
-      addMessage('이미지 생성 설정을 저장했어요.', 'bot');
-    }
-
-    function clearImageSettings(){
-      localStorage.removeItem('hf_api_key');
-      localStorage.removeItem('hf_endpoint');
-      hfApiKeyEl.value = '';
-      hfEndpointEl.value = '';
-      addMessage('이미지 생성 설정을 삭제했어요.', 'bot');
-    }
-
     function setImageLoading(text){
       imageWrap.innerHTML = '';
       const p = document.createElement('div');
@@ -649,12 +611,7 @@
     }
 
     async function generateImage(result){
-      const apiKey = hfApiKeyEl.value.trim();
-      const endpoint = hfEndpointEl.value.trim();
-      if (!apiKey || !endpoint) {
-        setImageLoading('Higgsfield API Key와 Endpoint를 입력하면 이미지를 생성할 수 있어요.');
-        return;
-      }
+      const endpoint = 'https://mcp.higgsfield.ai';
 
       const prompt = [
         'A dreamy, cute portrait inspired by lottery numbers.',
@@ -670,8 +627,7 @@
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             model: 'soul2',
@@ -823,10 +779,7 @@
     });
 
     initQuickButtons();
-    loadImageSettings();
     renderNumbers({ main: [], bonus: '-' });
-    saveApiBtn.addEventListener('click', saveImageSettings);
-    clearApiBtn.addEventListener('click', clearImageSettings);
   </script>
 </body>
 </html>
