@@ -245,6 +245,57 @@
     .card{
       padding:24px;
     }
+    .api-card{
+      margin-top:24px;
+      padding:20px;
+      border:1px solid var(--divider);
+      border-radius:18px;
+      background:var(--canvas);
+      box-shadow:0 2px 6px rgba(0,0,0,.04);
+      display:grid;
+      gap:12px;
+    }
+    .api-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .api-grid input{
+      font-size:14px;
+      padding:10px 14px;
+    }
+    .image-panel{
+      margin-top:18px;
+      padding:18px;
+      border-radius:18px;
+      background:var(--soft);
+      border:1px solid var(--divider);
+      display:grid;
+      gap:12px;
+    }
+    .image-wrap{
+      min-height:320px;
+      border-radius:14px;
+      border:1px solid var(--divider);
+      background:linear-gradient(135deg, #f8f8fb, #ececf2);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      position:relative;
+    }
+    .image-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .image-placeholder{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.43;
+      text-align:center;
+      padding:18px;
+    }
     .result-head{
       display:flex;
       justify-content:space-between;
@@ -387,6 +438,18 @@
           <span id="bonusNumber" style="font-family:'SF Pro Display',system-ui,-apple-system,sans-serif; font-size:28px; font-weight:600; letter-spacing:-.28px;">-</span>
         </div>
         <div class="explain" id="explain">생년월일을 입력하면 별자리 해석과 함께 번호 추천 이유를 보여드립니다.</div>
+        <div class="image-panel">
+          <div class="result-head" style="margin-bottom:0;">
+            <div>
+              <div class="zodiac">추첨 이미지</div>
+              <h3 style="font-size:21px; line-height:1.19;">Soul 2.0</h3>
+            </div>
+          </div>
+          <div class="image-wrap" id="imageWrap">
+            <div class="image-placeholder" id="imagePlaceholder">번호를 추첨하면 여기에서 이미지를 생성합니다.</div>
+          </div>
+          <div class="muted" id="imageStatus">이미지 생성 전입니다.</div>
+        </div>
       </article>
 
       <aside class="card">
@@ -399,6 +462,24 @@
         <div class="history" id="history"></div>
         <div class="muted" style="margin-top:12px;">최근 5개의 추천만 보여줍니다.</div>
       </aside>
+    </section>
+
+    <section class="api-card">
+      <div class="result-head">
+        <div>
+          <div class="zodiac">이미지 생성 설정</div>
+          <h3 style="font-size:21px; line-height:1.19;">Higgsfield Soul 2.0 연결</h3>
+        </div>
+      </div>
+      <div class="api-grid">
+        <input id="hfApiKey" type="password" placeholder="Higgsfield API Key" />
+        <input id="hfEndpoint" type="text" placeholder="API Endpoint URL" />
+      </div>
+      <div class="quick-grid">
+        <button id="saveApiBtn" class="button-secondary" type="button">설정 저장</button>
+        <button id="clearApiBtn" class="button-secondary" type="button">설정 삭제</button>
+      </div>
+      <div class="muted">API 키는 브라우저 localStorage에만 저장됩니다. 서버에는 올리지 않습니다.</div>
     </section>
   </main>
 
@@ -413,6 +494,13 @@
     const bonusNumberEl = document.getElementById('bonusNumber');
     const explainEl = document.getElementById('explain');
     const historyEl = document.getElementById('history');
+    const hfApiKeyEl = document.getElementById('hfApiKey');
+    const hfEndpointEl = document.getElementById('hfEndpoint');
+    const saveApiBtn = document.getElementById('saveApiBtn');
+    const clearApiBtn = document.getElementById('clearApiBtn');
+    const imageWrap = document.getElementById('imageWrap');
+    const imagePlaceholder = document.getElementById('imagePlaceholder');
+    const imageStatus = document.getElementById('imageStatus');
 
     let history = [];
 
@@ -523,6 +611,100 @@
       ].join('\n\n');
     }
 
+    function loadImageSettings(){
+      hfApiKeyEl.value = localStorage.getItem('hf_api_key') || '';
+      hfEndpointEl.value = localStorage.getItem('hf_endpoint') || '';
+    }
+
+    function saveImageSettings(){
+      localStorage.setItem('hf_api_key', hfApiKeyEl.value.trim());
+      localStorage.setItem('hf_endpoint', hfEndpointEl.value.trim());
+      addMessage('이미지 생성 설정을 저장했어요.', 'bot');
+    }
+
+    function clearImageSettings(){
+      localStorage.removeItem('hf_api_key');
+      localStorage.removeItem('hf_endpoint');
+      hfApiKeyEl.value = '';
+      hfEndpointEl.value = '';
+      addMessage('이미지 생성 설정을 삭제했어요.', 'bot');
+    }
+
+    function setImageLoading(text){
+      imageWrap.innerHTML = '';
+      const p = document.createElement('div');
+      p.className = 'image-placeholder';
+      p.textContent = text;
+      imageWrap.appendChild(p);
+      imageStatus.textContent = text;
+    }
+
+    function renderGeneratedImage(src){
+      imageWrap.innerHTML = '';
+      const img = document.createElement('img');
+      img.alt = '추첨 결과 이미지';
+      img.src = src;
+      imageWrap.appendChild(img);
+      imageStatus.textContent = '이미지 생성 완료';
+    }
+
+    async function generateImage(result){
+      const apiKey = hfApiKeyEl.value.trim();
+      const endpoint = hfEndpointEl.value.trim();
+      if (!apiKey || !endpoint) {
+        setImageLoading('Higgsfield API Key와 Endpoint를 입력하면 이미지를 생성할 수 있어요.');
+        return;
+      }
+
+      const prompt = [
+        'A dreamy, cute portrait inspired by lottery numbers.',
+        `Zodiac: ${result.zodiac.name}. Traits: ${result.zodiac.trait}.`,
+        `Numbers: ${result.numbers.main.join(', ')} plus bonus ${result.numbers.bonus}.`,
+        'Soft pastel background, charming expressive face, polished AI illustration, centered composition, clean and premium look.',
+        'Use the provided reference image style: round face, sparkling eyes, playful brows, soft pink backdrop, toy-like but premium.'
+      ].join(' ');
+
+      setImageLoading('이미지를 생성 중입니다...');
+
+      try{
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'soul2',
+            prompt,
+            aspect_ratio: '1:1',
+            quality: '2k'
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if(!response.ok){
+          throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        }
+
+        const imageUrl = data.url || data.image_url || data.output_url || data.result?.url || data.data?.[0]?.url;
+        const imageBase64 = data.base64 || data.image_base64 || data.data?.[0]?.b64_json;
+
+        if (imageUrl) {
+          renderGeneratedImage(imageUrl);
+          return;
+        }
+
+        if (imageBase64) {
+          renderGeneratedImage(`data:image/png;base64,${imageBase64}`);
+          return;
+        }
+
+        throw new Error('이미지 URL을 응답에서 찾지 못했습니다.');
+      }catch(error){
+        setImageLoading(`이미지 생성 실패: ${error.message}`);
+      }
+    }
+
     function initQuickButtons(){
       quickGrid.innerHTML = '';
       demoBirthdays.forEach((d) => {
@@ -613,6 +795,7 @@
 
       const saved = await saveDraw(result);
       addMessage(saved.ok ? '추천 결과를 DB에 저장했어요.' : `추천 결과 저장 실패: ${saved.error}`, 'bot');
+      await generateImage(result);
     }
 
     sendBtn.addEventListener('click', () => {
@@ -640,7 +823,10 @@
     });
 
     initQuickButtons();
+    loadImageSettings();
     renderNumbers({ main: [], bonus: '-' });
+    saveApiBtn.addEventListener('click', saveImageSettings);
+    clearApiBtn.addEventListener('click', clearImageSettings);
   </script>
 </body>
 </html>
