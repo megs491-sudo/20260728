@@ -530,6 +530,7 @@
     const hfApiSecretEl = document.getElementById('hfApiSecret');
     const imageWrap = document.getElementById('imageWrap');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
+    const characterPreview = document.querySelector('.character-preview');
     const imageStatus = document.getElementById('imageStatus');
 
     let history = [];
@@ -648,6 +649,9 @@
       p.textContent = text;
       imageWrap.appendChild(p);
       imageStatus.textContent = text;
+      if (characterPreview) {
+        characterPreview.dataset.state = 'loading';
+      }
     }
 
     function renderGeneratedImage(src){
@@ -657,6 +661,27 @@
       img.src = src;
       imageWrap.appendChild(img);
       imageStatus.textContent = '이미지 생성 완료';
+      if (characterPreview) {
+        characterPreview.dataset.state = 'ready';
+        characterPreview.innerHTML = '';
+
+        const title = document.createElement('div');
+        title.className = 'muted';
+        title.style.margin = '0';
+        title.textContent = '생성된 캐릭터';
+        characterPreview.appendChild(title);
+
+        const previewImg = document.createElement('img');
+        previewImg.alt = '생성된 캐릭터 미리보기';
+        previewImg.src = src;
+        characterPreview.appendChild(previewImg);
+
+        const caption = document.createElement('div');
+        caption.className = 'muted';
+        caption.style.margin = '0';
+        caption.textContent = '생년월일 추첨 결과에 맞춰 생성된 이미지입니다.';
+        characterPreview.appendChild(caption);
+      }
     }
 
     function createFallbackImage(result){
